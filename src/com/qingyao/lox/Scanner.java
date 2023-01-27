@@ -8,11 +8,21 @@ import java.util.Map;
 import static com.qingyao.lox.TokenType.*;
 
 class Scanner {
+    /**
+     * Store the raw source code
+     */
     private final String source;
+
+    /**
+     * Stores all scanned tokens
+     */
     private final List<Token> tokens = new ArrayList<>();
-    private int start = 0;
-    private int current = 0;
-    private int line = 1;
+
+    /**
+     * Trace the position of the scanner in the source code
+     */
+    private int start = 0, current = 0, line = 1;
+
     private static final Map<String, TokenType> keywords;
 
     static {
@@ -39,6 +49,11 @@ class Scanner {
         this.source = source;
     }
 
+    /**
+     * The scanner works its way through the source code,
+     * adding tokens until it runs out of characters.
+     * Then it appends one final “end of file” token.
+     */
     List<Token> scanTokens() {
         while (!isAtEnd()) {
             // We are at the beginning of the next lexeme.
@@ -50,6 +65,9 @@ class Scanner {
         return tokens;
     }
 
+    /**
+     * Recognizing Lexemes
+     */
     private void scanToken() {
         char c = advance();
         switch (c) {
@@ -103,13 +121,14 @@ class Scanner {
                     addToken(SLASH);
                 }
                 break;
+            // Skip the other nonsense characters: newlines and whitespace
             case ' ':
             case '\r':
             case '\t':
                 // Ignore whitespace.
                 break;
-
             case '\n':
+                // Ignore newlines.
                 line++;
                 break;
             case '"':
@@ -120,12 +139,9 @@ class Scanner {
                     number();
                 } else if (isAlpha(c)) {
                     identifier();
-
                 } else {
-
                     Lox.error(line, "Unexpected character.");
                 }
-
                 break;
         }
     }
@@ -135,6 +151,8 @@ class Scanner {
 
         String text = source.substring(start, current);
         TokenType type = keywords.get(text);
+        // If so, we use that keyword’s token type.
+        // Otherwise, it’s a regular user-defined identifier.
         if (type == null) type = IDENTIFIER;
         addToken(type);
     }
@@ -166,7 +184,7 @@ class Scanner {
             return;
         }
 
-        // The closing ".
+        // The closing \".
         advance();
 
         // Trim the surrounding quotes.
@@ -174,6 +192,10 @@ class Scanner {
         addToken(STRING, value);
     }
 
+    /**
+     * Check to see if the character is expected and choose whether to consume it,
+     * returning bool
+     */
     private boolean match(char expected) {
         if (isAtEnd()) return false;
         if (source.charAt(current) != expected) return false;
@@ -182,11 +204,17 @@ class Scanner {
         return true;
     }
 
+    /**
+     * Look ahead to the current character, but do not consume
+     */
     private char peek() {
         if (isAtEnd()) return '\0';
         return source.charAt(current);
     }
 
+    /**
+     * Look ahead to the next character, but do not consume
+     */
     private char peekNext() {
         if (current + 1 >= source.length()) return '\0';
         return source.charAt(current + 1);
@@ -206,18 +234,30 @@ class Scanner {
         return c >= '0' && c <= '9';
     }
 
+    /**
+     * Whether the end of the file is reached
+     */
     private boolean isAtEnd() {
         return current >= source.length();
     }
 
+    /**
+     * Gets the next character in the source file and returns it
+     */
     private char advance() {
         return source.charAt(current++);
     }
 
+    /**
+     * Gets the text of the current lexeme and creates a new token for it
+     */
     private void addToken(TokenType type) {
         addToken(type, null);
     }
 
+    /**
+     * Overload method to handle tokens with *literal values*
+     */
     private void addToken(TokenType type, Object literal) {
         String text = source.substring(start, current);
         tokens.add(new Token(type, text, literal, line));

@@ -23,7 +23,10 @@ public class Lox {
         }
     }
 
-    // 读取文件执行
+    /**
+     * Start jlox from the command line and give it a path to a file,
+     * it reads the file and executes it.
+     */
     private static void runFile(String path) throws IOException {
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
@@ -33,7 +36,10 @@ public class Lox {
     }
 
 
-    // 命令行交互式的输入与执行 REPL
+    /**
+     * Run the interpreter interactively,
+     * reading and executing one line at a time.
+     */
     private static void runPrompt() throws IOException {
         InputStreamReader input = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(input);
@@ -41,14 +47,18 @@ public class Lox {
         for (; ; ) {
             System.out.print("> ");
             String line = reader.readLine();
+            // Control-D
             if (line == null) break;
             run(line);
+            // Even if an error occurs, it does not kill the session
             hadError = false;
         }
     }
 
 
-    // 核心程序，执行 scanner、parsing 等
+    /**
+     * Both the prompt and the file runner are thin wrappers around this core function.
+     */
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
@@ -59,19 +69,21 @@ public class Lox {
         }
     }
 
-    // 错误处理程序
+    /**
+     * Error handing
+     */
     static void error(int line, String message) {
         report(line, "", message);
     }
 
-    // 报告错误的发生位置及相关信息
+    /**
+     * Help function for error handling
+     */
     private static void report(int line, String where,
                                String message) {
 
         System.err.println(
                 "[line " + line + "] Error" + where + ": " + message);
         hadError = true;
-
-
     }
 }
