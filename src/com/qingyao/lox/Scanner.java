@@ -114,9 +114,14 @@ class Scanner {
                 addToken(match('=') ? GREATER_EQUAL : GREATER);
                 break;
             case '/':
+                // Line comment
                 if (match('/')) {
                     // A comment goes until the end of the line.
                     while (peek() != '\n' && !isAtEnd()) advance();
+                }
+                // Block comment
+                else if (match('*')) {
+                    block_comment();
                 } else {
                     addToken(SLASH);
                 }
@@ -190,6 +195,27 @@ class Scanner {
         // Trim the surrounding quotes.
         String value = source.substring(start + 1, current - 1);
         addToken(STRING, value);
+    }
+
+    private void block_comment() {
+        int depth = 1;
+        while (depth != 0 && !isAtEnd()) {
+            switch (advance()) {
+                case '\n' -> line++;
+                case '/' -> {
+                    if (peek() == '*') {
+                        depth++;
+                        advance();
+                    }
+                }
+                case '*' -> {
+                    if (peek() == '/') {
+                        depth--;
+                        advance();
+                    }
+                }
+            }
+        }
     }
 
     /**
