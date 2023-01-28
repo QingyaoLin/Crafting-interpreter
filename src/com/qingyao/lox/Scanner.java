@@ -121,7 +121,7 @@ class Scanner {
                 }
                 // Block comment
                 else if (match('*')) {
-                    block_comment();
+                    blockComment();
                 } else {
                     addToken(SLASH);
                 }
@@ -197,7 +197,7 @@ class Scanner {
         addToken(STRING, value);
     }
 
-    private void block_comment() {
+    private void blockComment() {
         int depth = 1;
         while (depth != 0 && !isAtEnd()) {
             switch (advance()) {
